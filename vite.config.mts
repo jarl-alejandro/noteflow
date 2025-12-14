@@ -1,6 +1,5 @@
 import { defineConfig } from 'vite'
 import { devtools } from '@tanstack/devtools-vite'
-// @ts-expect-error - TypeScript no resuelve correctamente la exportación del package.json, pero funciona en runtime
 import { tanstackStart } from '@tanstack/react-start/plugin/vite'
 import viteReact from '@vitejs/plugin-react'
 import viteTsConfigPaths from 'vite-tsconfig-paths'
@@ -26,9 +25,13 @@ const config = defineConfig({
   optimizeDeps: {
     force: true, // Forzar reoptimización de dependencias
     exclude: ['pg', 'pg-native', 'drizzle-orm', 'dotenv'], // Excluir módulos del servidor
+    include: [
+      '@tanstack/devtools-vite',
+      '@tanstack/react-start/plugin/vite',
+    ],
   },
   ssr: {
-    noExternal: ['@tanstack/react-start'], // Asegurar que TanStack Start se procese correctamente
+    noExternal: ['@tanstack/react-start', '@tanstack/devtools-vite'], // Asegurar que TanStack Start se procese correctamente
     external: ['pg', 'pg-native', 'drizzle-orm'], // Marcar como externos en SSR
   },
   resolve: {
