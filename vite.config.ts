@@ -1,15 +1,16 @@
 import { defineConfig } from 'vite'
 import { devtools } from '@tanstack/devtools-vite'
+// @ts-expect-error - TypeScript no resuelve correctamente la exportación del package.json, pero funciona en runtime
 import { tanstackStart } from '@tanstack/react-start/plugin/vite'
 import viteReact from '@vitejs/plugin-react'
 import viteTsConfigPaths from 'vite-tsconfig-paths'
 import tailwindcss from '@tailwindcss/vite'
-import netlify from '@netlify/vite-plugin-tanstack-start'
+import { nitro } from 'nitro/vite'
 
 const config = defineConfig({
   plugins: [
     devtools(),
-    netlify(),
+    nitro(),
     // this is the plugin that enables path aliases
     viteTsConfigPaths({
       projects: ['./tsconfig.json'],
@@ -32,10 +33,7 @@ const config = defineConfig({
   },
   resolve: {
     alias: {
-      // Evitar que Vite resuelva estas dependencias en el cliente
-      'pg': false,
-      'pg-native': false,
-      'drizzle-orm': false,
+      // Estas dependencias se excluyen automáticamente en SSR
     },
   },
   build: {
