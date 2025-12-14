@@ -2,12 +2,18 @@ import { createFileRoute, useNavigate } from '@tanstack/react-router'
 import { useServerFn } from '@tanstack/react-start'
 import { useState } from 'react'
 import { toast } from 'sonner'
-import { getNoteById, deleteNote } from '@/server/functions'
+import { deleteNote } from '@/server/client-functions'
 import { Button } from '@/components/ui/button'
+
+// Importar getNoteById solo en el loader (servidor)
+async function loadNote(id: string) {
+  const { getNoteById } = await import('@/server/functions')
+  return getNoteById(id)
+}
 
 export const Route = createFileRoute('/notes/$id')({
   loader: async ({ params }) => {
-    const note = await getNoteById(params.id)
+    const note = await loadNote(params.id)
     if (!note) {
       throw new Error('Nota no encontrada')
     }

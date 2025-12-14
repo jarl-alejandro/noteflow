@@ -46,6 +46,7 @@ function NotFoundComponent() {
   )
 }
 
+
 function RootDocument({ children }: { children: React.ReactNode }) {
   return (
     <html lang="en">

@@ -2,16 +2,23 @@ import { useState } from 'react'
 import { createFileRoute } from '@tanstack/react-router'
 import { useServerFn } from '@tanstack/react-start'
 import { toast } from 'sonner'
-import { getNotes, createNote } from '@/server/functions'
+// Importar server functions del cliente (sin dependencias de pg)
+import { getNotesClient, createNote } from '@/server/client-functions'
 import type { Note } from '@/types/note'
 import { NoteTable } from '@/components/NoteTable'
 import { CreateNoteModal } from '@/components/CreateNoteModal'
 import { Button } from '@/components/ui/button'
 
+// Importar getNotes solo en el loader (servidor)
+async function loadNotes() {
+  const { getNotes } = await import('@/server/functions')
+  return getNotes()
+}
+
 export const Route = createFileRoute('/')({
   loader: async () => {
-    // Cargar las notas desde el servidor
-    const notes = await getNotes()
+    // Cargar las notas desde el servidor (solo se ejecuta en servidor)
+    const notes = await loadNotes()
     return { notes }
   },
   component: App,
@@ -23,11 +30,9 @@ function App() {
   const [isModalOpen, setModalOpen] = useState(false)
   const [isLoading, setIsLoading] = useState(false)
 
-  console.log('initialNotes', initialNotes);
-
-  // Server functions hooks
-  const getNotesFn = useServerFn(getNotes as any)
-  const createNoteFn = useServerFn(createNote as any)
+  // Server functions hooks (solo usar las funciones con createServerFn)
+  const getNotesFn = useServerFn(getNotesClient)
+  const createNoteFn = useServerFn(createNote)
 
   // Función para recargar las notas
   const reloadNotes = async () => {
@@ -61,18 +66,12 @@ function App() {
     <div className="container mx-auto py-8 px-4 max-w-7xl">
       <div className="flex justify-between items-center mb-6">
         <h1 className="text-3xl font-bold">QuickNotes</h1>
-        <Button onClick={() => {
-          console.log('open');
-          setModalOpen(true)
-        }}>Nueva Nota</Button>
+        <Button onClick={() => setModalOpen(true)}>Nueva Nota</Button>
       </div>
 
       <CreateNoteModal
         isOpen={isModalOpen}
-        onClose={() => {
-          console.log('close');
-          setModalOpen(false);
-        }}
+        onClose={() => setModalOpen(false)}
         onSave={handleSaveNote}
       />
 
