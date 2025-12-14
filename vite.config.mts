@@ -22,48 +22,6 @@ const config = defineConfig({
       },
     }),
   ],
-  optimizeDeps: {
-    force: true, // Forzar reoptimización de dependencias
-    exclude: ['pg', 'pg-native', 'drizzle-orm', 'dotenv'], // Excluir módulos del servidor
-    include: [
-      '@tanstack/devtools-vite',
-      '@tanstack/react-start/plugin/vite',
-    ],
-  },
-  ssr: {
-    noExternal: ['@tanstack/react-start', '@tanstack/devtools-vite'], // Asegurar que TanStack Start se procese correctamente
-    external: ['pg', 'pg-native', 'drizzle-orm'], // Marcar como externos en SSR
-  },
-  resolve: {
-    alias: {
-      // Estas dependencias se excluyen automáticamente en SSR
-    },
-  },
-  build: {
-    rollupOptions: {
-      external: (id) => {
-        // Excluir módulos de Node.js del bundle del cliente
-        if (
-          id.includes('pg') || 
-          id.includes('drizzle-orm') || 
-          id.includes('dotenv') ||
-          id.includes('node:') ||
-          id === 'util' ||
-          id === 'crypto' ||
-          id === 'buffer'
-        ) {
-          return true
-        }
-        return false
-      },
-    },
-  },
-  server: {
-    fs: {
-      // Permitir servir archivos desde node_modules
-      allow: ['..'],
-    },
-  },
 })
 
 export default config
