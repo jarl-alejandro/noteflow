@@ -2,21 +2,14 @@ import { createFileRoute, useNavigate } from '@tanstack/react-router'
 import { useServerFn } from '@tanstack/react-start'
 import { useState } from 'react'
 import { toast } from 'sonner'
-import { deleteNote } from '@/server/client-functions'
+import { getNoteById, deleteNote } from '@/server/functions'
 import { Button } from '@/components/ui/button'
-
-// Importar getNoteById solo en el loader (servidor)
-async function loadNote(id: string) {
-  const { getNoteById } = await import('@/server/functions')
-  return getNoteById(id)
-}
 
 export const Route = createFileRoute('/notes/$id')({
   loader: async ({ params }) => {
-    const note = await loadNote(params.id)
-    if (!note) {
-      throw new Error('Nota no encontrada')
-    }
+    // Llamar Server Function directamente desde el loader (servidor)
+    // La validación y notFound() se manejan dentro de la Server Function
+    const note = await getNoteById({ data: { id: params.id } })
     return { note }
   },
   component: NoteDetail,
@@ -27,8 +20,8 @@ function NoteDetail() {
   const navigate = useNavigate()
   const [isDeleting, setIsDeleting] = useState(false)
 
-  // Server function hook
-  const deleteNoteFn = useServerFn(deleteNote as any)
+  // Server function hook para uso en el cliente
+  const deleteNoteFn = useServerFn(deleteNote)
 
   // Función para formatear la fecha
   const formatDate = (date: Date) => {
@@ -49,7 +42,7 @@ function NoteDetail() {
 
     setIsDeleting(true)
     try {
-      await deleteNoteFn(note.id)
+      await deleteNoteFn({ data: { id: note.id } })
       toast.success('Nota eliminada exitosamente')
       navigate({ to: '/' })
     } catch (error) {
