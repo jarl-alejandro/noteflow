@@ -22,6 +22,15 @@ const config = defineConfig({
       },
     }),
   ],
+  optimizeDeps: {
+    force: true, // Forzar reoptimización de dependencias
+  },
+  server: {
+    fs: {
+      // Permitir servir archivos desde node_modules
+      allow: ['..'],
+    },
+  },
 })
 
 export default config
