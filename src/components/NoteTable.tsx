@@ -8,7 +8,7 @@ import {
   TableRow,
 } from '@/components/ui/table'
 import { Button } from '@/components/ui/button'
-import type { Note } from '@/server/functions'
+import type { Note } from '@/types/note'
 
 interface NoteTableProps {
   notes: Note[]

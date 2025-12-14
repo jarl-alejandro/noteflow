@@ -24,6 +24,10 @@ const config = defineConfig({
   ],
   optimizeDeps: {
     force: true, // Forzar reoptimización de dependencias
+    exclude: ['pg', 'pg-native', 'drizzle-orm'], // Excluir módulos del servidor
+  },
+  ssr: {
+    noExternal: ['@tanstack/react-start'], // Asegurar que TanStack Start se procese correctamente
   },
   server: {
     fs: {

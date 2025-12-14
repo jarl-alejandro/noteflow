@@ -1,17 +1,14 @@
+import { createServerFn } from '@tanstack/react-start'
 import { eq } from 'drizzle-orm'
 import { db } from '@/db'
 import { notes } from '@/db/schema'
+import type { Note } from '@/types/note'
 
-// Tipo para una nota
-export type Note = {
-  id: string
-  title: string
-  content: string
-  createdAt: Date
-}
+// Re-exportar el tipo para compatibilidad
+export type { Note }
 
-// Obtener todas las notas
-export async function getNotes(): Promise<Note[]> {
+// Funciones internas (sin createServerFn para uso en loaders)
+async function _getNotes(): Promise<Note[]> {
   const allNotes = await db.select().from(notes)
   return allNotes.map((note) => ({
     id: note.id,
@@ -21,16 +18,15 @@ export async function getNotes(): Promise<Note[]> {
   }))
 }
 
-// Crear una nueva nota
-export async function createNote(data: {
+async function _createNote(data: {
   title: string
   content: string
 }): Promise<Note> {
   // Validar que title y content no estén vacíos
-  if (!data.title || !data.title.trim()) {
+  if (!data?.title || !data.title.trim()) {
     throw new Error('El título es requerido')
   }
-  if (!data.content || !data.content.trim()) {
+  if (!data?.content || !data.content.trim()) {
     throw new Error('El contenido es requerido')
   }
 
@@ -50,8 +46,11 @@ export async function createNote(data: {
   }
 }
 
-// Obtener una nota específica por ID
-export async function getNoteById(id: string): Promise<Note | null> {
+async function _getNoteById(id: string): Promise<Note | null> {
+  if (!id) {
+    return null
+  }
+  
   const [note] = await db.select().from(notes).where(eq(notes.id, id))
   
   if (!note) {
@@ -66,9 +65,28 @@ export async function getNoteById(id: string): Promise<Note | null> {
   }
 }
 
-// Eliminar una nota
-export async function deleteNote(id: string): Promise<{ success: boolean }> {
+async function _deleteNote(id: string): Promise<{ success: boolean }> {
+  if (!id) {
+    throw new Error('ID es requerido')
+  }
   await db.delete(notes).where(eq(notes.id, id))
   return { success: true }
 }
+
+// Exportar funciones para uso en loaders (sin createServerFn)
+export const getNotes = _getNotes
+export const getNoteById = _getNoteById
+
+// Exportar server functions para uso en cliente (con createServerFn)
+// useServerFn llama a estas funciones con los argumentos directamente
+export const createNote = createServerFn().handler(async (ctx) => {
+  // useServerFn pasa los argumentos como primer parámetro en ctx.data
+  const data = (ctx as any).data as { title: string; content: string }
+  return _createNote(data)
+}) as any
+
+export const deleteNote = createServerFn().handler(async (ctx) => {
+  const id = (ctx as any).data as string
+  return _deleteNote(id)
+}) as any
 

@@ -1,4 +1,5 @@
 import { createFileRoute, useNavigate } from '@tanstack/react-router'
+import { useServerFn } from '@tanstack/react-start'
 import { useState } from 'react'
 import { toast } from 'sonner'
 import { getNoteById, deleteNote } from '@/server/functions'
@@ -20,6 +21,9 @@ function NoteDetail() {
   const navigate = useNavigate()
   const [isDeleting, setIsDeleting] = useState(false)
 
+  // Server function hook
+  const deleteNoteFn = useServerFn(deleteNote as any)
+
   // Función para formatear la fecha
   const formatDate = (date: Date) => {
     return new Date(date).toLocaleDateString('es-ES', {
@@ -39,7 +43,7 @@ function NoteDetail() {
 
     setIsDeleting(true)
     try {
-      await deleteNote(note.id)
+      await deleteNoteFn(note.id)
       toast.success('Nota eliminada exitosamente')
       navigate({ to: '/' })
     } catch (error) {
